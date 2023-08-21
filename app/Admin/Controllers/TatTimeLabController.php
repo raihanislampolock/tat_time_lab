@@ -18,22 +18,24 @@ class TatTimeLabController extends AdminController
     public function __construct()
     {
         $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://ept.praavahealth.com/API/PatientPortal/ServiceMasterApp?token=03e62234b7238ca3eab782f30b9dfa94&code=service",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-        )
+        curl_setopt_array(
+            $curl,
+            array(
+                CURLOPT_URL => "https://ept.praavahealth.com/API/PatientPortal/ServiceMasterApp?token=03e62234b7238ca3eab782f30b9dfa94&code=service",
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'GET',
+            )
         );
         try {
             $response = curl_exec($curl);
             // dd($response);
             if (!is_null($response)) {
-                $responseData = json_decode($response, true); // Decoding JSON into an associative array
+                $responseData = json_decode($response, true);
                 if (isset($responseData['result'])) {
                     $title = [];
                     foreach ($responseData['result'] as $item) {
@@ -42,7 +44,7 @@ class TatTimeLabController extends AdminController
                     $this->service_title = $title;
                 }
 
-                return $this->service_title; // Returning the decoded data
+                return $this->service_title;
             }
         } catch (\Exception $exception) {
             \Log::info(json_encode($exception));
@@ -77,6 +79,8 @@ class TatTimeLabController extends AdminController
         $grid->column('expiry_date', __('Expiry date'));
         $grid->column('status', __('Status'));
         $grid->column('cd', __('Cd'));
+
+        $grid->model()->orderBy('id', 'desc');
 
         return $grid;
     }
@@ -120,11 +124,13 @@ class TatTimeLabController extends AdminController
         $form = new Form(new TatTimeLab());
 
         $form->select('service_id', __('Choose A Service'))
-        ->addElementClass('service_list')
-        ->options($this->service_title)
-        ->rules('required');
+            ->addElementClass('service_list')
+            ->options($this->service_title)
+            ->rules('required');
 
-        $form->text('service_name', __('Service name'))->attribute('id', 'service_name_field')->readOnly();
+        $form->text('service_name', __('Service name'))->addElementClass('service_name')
+            ->readOnly();
+        ;
 
         $form->text('b2b_b2c', __('B2b b2c'));
         $form->time('start_time', __('Start time'))->default(date('h:i A', strtotime('now')))->format('h:m A');
@@ -141,38 +147,21 @@ class TatTimeLabController extends AdminController
     protected function script()
     {
         return <<<EOT
-    <script>
-     document.addEventListener('DOMContentLoaded', function() {
-        var serviceIdSelect = document.querySelector('[name="service_id"]');
-        var serviceNameField = document.getElementById('service_name_field');
-
-        serviceIdSelect.addEventListener('change', function() {
-            var selectedOption = serviceIdSelect.options[serviceIdSelect.selectedIndex];
-            var serviceId = selectedOption.value;
-
-            if (serviceId) {
-                fetchServiceName(serviceId);
-            }
-        });
-
-        function fetchServiceName(serviceId) {
-            // You can use your own AJAX library or fetch function here
-            // Example using fetch API
-            fetch('/get-service-name/' + serviceId)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.service_name) {
-                        serviceNameField.value = data.service_name;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching service name:', error);
+            $(document).ready(function() {
+                $(".service_list").on("change", function() {
+                    serviceNames();
                 });
-        }
-    });
-    </script>
-    EOT;
+            });
+        
+            function serviceNames() {
+                if ($(".service_list").find(":selected").val()) {
+                    let serviceName = $(".service_list option:selected").text();
+                    $(".service_name").val(serviceName);
+                }
+            }
+        EOT;
     }
-    
+
+
 
 }
