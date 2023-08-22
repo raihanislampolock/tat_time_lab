@@ -82,6 +82,8 @@ class TatTimeLabController extends AdminController
 
         $grid->model()->orderBy('id', 'desc');
 
+        
+
         return $grid;
     }
 
