@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTatTimeLabTable extends Migration
+class CreateTestTypeTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,16 +13,9 @@ class CreateTatTimeLabTable extends Migration
      */
     public function up()
     {
-        Schema::create('tat_time_lab', function (Blueprint $table) {
+        Schema::create('test_type', function (Blueprint $table) {
             $table->id();
-            $table->integer('service_id');
-            $table->string('service_name', 255);
-            $table->integer('b2b_b2c');
-            $table->dateTime('start_time')->nullable();
-            $table->dateTime('end_time')->nullable();
-            $table->integer('days')->nullable();
-            $table->dateTime('report_delevary')->nullable();
-            $table->boolean('status')->default(1);
+            $table->string('name', 10);
             $table->string('cb', 255)->nullable();
             $table->timestamp('cd')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->string('ub', 255)->nullable();
@@ -37,6 +30,6 @@ class CreateTatTimeLabTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('tat_time_lab');
+        Schema::dropIfExists('test_type');
     }
 }

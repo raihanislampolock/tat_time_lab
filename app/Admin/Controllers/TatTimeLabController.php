@@ -3,6 +3,7 @@
 namespace App\Admin\Controllers;
 
 use App\Models\TatTimeLab;
+use App\Models\TestType;
 use App\Services\MasterServiceList;
 use Encore\Admin\Admin;
 use Encore\Admin\Controllers\AdminController;
@@ -71,18 +72,20 @@ class TatTimeLabController extends AdminController
         $grid->column('id', __('Id'));
         $grid->column('service_id', __('Service id'));
         $grid->column('service_name', __('Service name'));
-        $grid->column('b2b_b2c', __('B2b b2c'));
+        $grid->TestType()->name('Test Type');
         $grid->column('start_time', __('Start time'));
         $grid->column('end_time', __('End time'));
         $grid->column('days', __('Days'));
         $grid->column('report_delevary', __('Report delevary'));
-        $grid->column('expiry_date', __('Expiry date'));
-        $grid->column('status', __('Status'));
+        $grid->column('status', __('Status'))->display(function ($status) {
+            return $status ? '<span style=" color: green; font-weight:900;">Active</span>' :
+            '<span style="color: red; font-weight:900;">Inactive</span>';
+        });
         $grid->column('cd', __('Cd'));
 
         $grid->model()->orderBy('id', 'desc');
 
-        
+
 
         return $grid;
     }
@@ -100,12 +103,11 @@ class TatTimeLabController extends AdminController
         $show->field('id', __('Id'));
         $show->field('service_id', __('Service id'));
         $show->field('service_name', __('Service name'));
-        $show->field('b2b_b2c', __('B2b b2c'));
+        $show->field('test_type', __('Test Type'));
         $show->field('start_time', __('Start time'));
         $show->field('end_time', __('End time'));
         $show->field('days', __('Days'));
         $show->field('report_delevary', __('Report delevary'));
-        $show->field('expiry_date', __('Expiry date'));
         $show->field('status', __('Status'));
         $show->field('cb', __('Cb'));
         $show->field('cd', __('Cd'));
@@ -125,22 +127,27 @@ class TatTimeLabController extends AdminController
         Admin::script($this->script());
         $form = new Form(new TatTimeLab());
 
-        $form->select('service_id', __('Choose A Service'))
-            ->addElementClass('service_list')
-            ->options($this->service_title)
-            ->rules('required');
+        $form->select('service_id', __('Choose A Service'))->addElementClass('service_list')->options($this->service_title)->rules('required');
 
-        $form->text('service_name', __('Service name'))->addElementClass('service_name')
-            ->readOnly();
-        ;
+        $form->hidden('service_name', __('Service name'))->addElementClass('service_name');
 
-        $form->text('b2b_b2c', __('B2b b2c'));
-        $form->time('start_time', __('Start time'))->default(date('h:i A', strtotime('now')))->format('h:m A');
-        $form->time('end_time', __('End time'))->default(date('h:i A', strtotime('now')))->format('h:m A');
-        $form->number('days', __('Days'));
-        $form->time('report_delevary', __('Report delevary'))->default(date('h:i A', strtotime('now')))->format('h:m A');
-        $form->datetime('expiry_date', __('Expiry date'))->default(date('Y-m-d H:i:s'));
-        $form->switch('status', __('Status'));
+        $Test = TestType::pluck('name', 'id')->toArray();
+        $form->select('b2b_b2c', __('Test Type'))->options($Test);
+        $form->switch('status', __('Status'))->default(1);
+        $form->radio('dt', 'Select')
+            ->options([
+                1 => 'Time Wise Tat',
+                2 => 'Date Wise Tat',
+            ])->when(1, function (Form $form) {
+                $form->datetime('start_time', __('Start time'))->format('YYYY-MM-DD hh:mm A');
+                $form->datetime('end_time', __('End time'))->format('YYYY-MM-DD hh:mm A');
+                $form->datetime('report_delevary', __('Report delevary'))->format('YYYY-MM-DD hh:mm A');
+            })->when(2, function (Form $form) {
+               $form->number('days', __('Days'));
+        })->default(1);
+
+        $form->ignore('dt');
+
         $form->hidden('cb', __('Cb'))->value(auth()->user()->name);
         $form->hidden('ub', __('Ub'))->value(auth()->user()->name);
 

@@ -13,4 +13,5 @@ Route::group([
 
     $router->get('/', 'HomeController@index')->name('home');
     Route::resource('tat-time-lab', TatTimeLabController::class);
+    Route::resource('test-type', TestTypeController::class);
 });
