@@ -51,6 +51,48 @@ class TatTimeLabController extends AdminController
             \Log::info(json_encode($exception));
         }
     }
+    protected function script()
+    {
+        return <<<EOT
+            $(document).ready(function() {
+                $(".service_list").on("change", function() {
+                    serviceNames();
+                    myFunction(this);
+                });
+            });
+    
+            function serviceNames() {
+                if ($(".service_list").find(":selected").val()) {
+                    let serviceName = $(".service_list option:selected").text();
+                    $(".service_name").val(serviceName);
+                }
+            }
+            
+            window.myFunction = function(selectElement) {
+
+
+                
+                $("#selectElement").on("change", function() {
+                    var x = $(this).val();
+                    $("#demo").text("You selected: " + x);
+                
+                    $.ajax({
+                        url: "tat-time-lab",
+                        method: "GET",
+                        data: { service_id: x },
+                        success: function(response) {
+                            console.log("Response:", response);
+                            document.getElementById("show").innerHTML = response;
+                            $("#result").html(response);
+                        },                        
+                    });
+                });
+                
+            };
+        EOT;
+    }
+
+
 
 
     /**
@@ -127,50 +169,23 @@ class TatTimeLabController extends AdminController
         Admin::script($this->script());
         $form = new Form(new TatTimeLab());
 
-        $form->select('service_id', __('Choose A Service'))->addElementClass('service_list')->options($this->service_title)->rules('required');
-
+        $form->select('service_id', __('Choose A Service'))->addElementClass('service_list')->options($this->service_title)->rules('required')->attribute('onchange', 'myFunction(this)');
         $form->hidden('service_name', __('Service name'))->addElementClass('service_name');
+        $form->html('<div id="show"></div>');
 
         $Test = TestType::pluck('name', 'id')->toArray();
         $form->select('b2b_b2c', __('Test Type'))->options($Test);
+        $form->datetime('start_time', __('Start time'))->format('hh:mm A');
+        $form->datetime('end_time', __('End time'))->format('hh:mm A');
+        $form->datetime('report_delevary', __('Report delevary'))->format('hh:mm A');
+        $form->number('days', __('Days'));
         $form->switch('status', __('Status'))->default(1);
-        $form->radio('dt', 'Select')
-            ->options([
-                1 => 'Time Wise Tat',
-                2 => 'Date Wise Tat',
-            ])->when(1, function (Form $form) {
-                $form->datetime('start_time', __('Start time'))->format('YYYY-MM-DD hh:mm A');
-                $form->datetime('end_time', __('End time'))->format('YYYY-MM-DD hh:mm A');
-                $form->datetime('report_delevary', __('Report delevary'))->format('YYYY-MM-DD hh:mm A');
-            })->when(2, function (Form $form) {
-               $form->number('days', __('Days'));
-        })->default(1);
-
-        $form->ignore('dt');
-
         $form->hidden('cb', __('Cb'))->value(auth()->user()->name);
         $form->hidden('ub', __('Ub'))->value(auth()->user()->name);
 
         return $form;
     }
-    protected function script()
-    {
-        return <<<EOT
-            $(document).ready(function() {
-                $(".service_list").on("change", function() {
-                    serviceNames();
-                });
-            });
-        
-            function serviceNames() {
-                if ($(".service_list").find(":selected").val()) {
-                    let serviceName = $(".service_list option:selected").text();
-                    $(".service_name").val(serviceName);
-                }
-            }
-        EOT;
-    }
-
+    
 
 
 }
