@@ -69,25 +69,26 @@ class TatTimeLabController extends AdminController
             }
             
             window.myFunction = function(selectElement) {
-
-
-                
-                $("#selectElement").on("change", function() {
-                    var x = $(this).val();
-                    $("#demo").text("You selected: " + x);
-                
+                $(selectElement).on("change", function() {
+                    var selectedServiceId = $(this).val();
+    
                     $.ajax({
-                        url: "tat-time-lab",
-                        method: "GET",
-                        data: { service_id: x },
+                        url: "/admin/get-lab-tat",
+                        type: "GET",
+                        data: { selectedServiceId: selectedServiceId },
                         success: function(response) {
-                            console.log("Response:", response);
-                            document.getElementById("show").innerHTML = response;
-                            $("#result").html(response);
-                        },                        
+                            if (response) {
+                                console.log(response);
+                                $("#show").html(response);
+                            } else {
+                                console.log("Selected value does not match any service_id in the table.");
+                            }
+                        },
+                        error: function(error) {
+                            console.log("An error occurred:", error);
+                        }
                     });
                 });
-                
             };
         EOT;
     }
@@ -159,6 +160,10 @@ class TatTimeLabController extends AdminController
         return $show;
     }
 
+    public function showTat(){
+        $data = TatTimeLab::all();
+            return response()->json($data); 
+    }
     /**
      * Make a form builder.
      *
