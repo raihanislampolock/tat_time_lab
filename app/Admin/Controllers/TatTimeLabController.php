@@ -188,9 +188,9 @@ class TatTimeLabController extends AdminController
 
         $Test = TestType::pluck('name', 'id')->toArray();
         $form->select('b2b_b2c', __('Test Type'))->options($Test);
-        $form->datetime('start_time', __('Start time'));
-        $form->datetime('end_time', __('End time'));
-        $form->datetime('report_delevary', __('Report delevary'));
+        $form->time('start_time', __('Start time'))->format('hh:mm A');
+        $form->time('end_time', __('End time'))->format('hh:mm A');
+        $form->time('report_delevary', __('Report delevary'))->format('hh:mm A');
         $form->number('days', __('Days'));
         $form->switch('status', __('Status'))->default(1);
         $form->hidden('cb', __('Cb'))->value(auth()->user()->name);

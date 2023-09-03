@@ -18,10 +18,10 @@ class CreateTatTimeLabTable extends Migration
             $table->integer('service_id');
             $table->string('service_name', 255);
             $table->integer('b2b_b2c');
-            $table->dateTime('start_time')->nullable();
-            $table->dateTime('end_time')->nullable();
+            $table->time('start_time')->nullable();
+            $table->time('end_time')->nullable();
             $table->integer('days')->nullable();
-            $table->dateTime('report_delevary')->nullable();
+            $table->time('report_delevary')->nullable();
             $table->boolean('status')->default(1);
             $table->string('cb', 255)->nullable();
             $table->timestamp('cd')->default(DB::raw('CURRENT_TIMESTAMP'));
