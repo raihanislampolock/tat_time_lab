@@ -71,17 +71,29 @@ class TatTimeLabController extends AdminController
             window.myFunction = function(selectElement) {
                 $(selectElement).on("change", function() {
                     var selectedServiceId = $(this).val();
-    
+                    var matchingData = ""; // Initialize an empty string to accumulate matching data.
+            
                     $.ajax({
                         url: "/admin/get-lab-tat",
                         type: "GET",
                         data: { selectedServiceId: selectedServiceId },
                         success: function(response) {
                             if (response) {
-                                console.log(response);
-                                $("#show").html(response);
+                                var found = false;
+                                for (var i = 0; i < response.length; i++) {
+                                    if (response[i].service_id == selectedServiceId) {
+                                        matchingData += "<b>Service Name:</b> " + response[i].service_name + " <b>Start Time:</b> " + response[i].start_time + " <b>End Time:</b> " + response[i].end_time + " <b>Days:</b> " + response[i].days + " <b>Report Delevary:</b> " + response[i].report_delevary + "<br><br>";
+                                        found = true;
+                                    }
+                                }
+            
+                                if (found) {
+                                    document.getElementById("show").innerHTML = matchingData;
+                                } else {
+                                    document.getElementById("show").innerHTML = "No data found for the selected service ID.";
+                                }
                             } else {
-                                console.log("Selected value does not match any service_id in the table.");
+                                console.log("Response is empty or undefined.");
                             }
                         },
                         error: function(error) {
@@ -180,9 +192,9 @@ class TatTimeLabController extends AdminController
 
         $Test = TestType::pluck('name', 'id')->toArray();
         $form->select('b2b_b2c', __('Test Type'))->options($Test);
-        $form->datetime('start_time', __('Start time'))->format('hh:mm A');
-        $form->datetime('end_time', __('End time'))->format('hh:mm A');
-        $form->datetime('report_delevary', __('Report delevary'))->format('hh:mm A');
+        $form->datetime('start_time', __('Start time'));
+        $form->datetime('end_time', __('End time'));
+        $form->datetime('report_delevary', __('Report delevary'));
         $form->number('days', __('Days'));
         $form->switch('status', __('Status'))->default(1);
         $form->hidden('cb', __('Cb'))->value(auth()->user()->name);
