@@ -57,7 +57,7 @@ class TatTimeLabController extends AdminController
         $(document).ready(function() {
             $(".service_list").on("change", function() {
                 serviceNames();
-                var selectedServiceId = $(this).val();
+                let selectedServiceId = $(this).val();
                 if (selectedServiceId) {
                     $.ajax({
                         url: "/admin/get-lab-tat",
@@ -65,8 +65,8 @@ class TatTimeLabController extends AdminController
                         data: { selectedServiceId: selectedServiceId },
                         success: function(response) {
                             if (response) {
-                                var found = false;
-                                var matchingData = "";
+                                let found = false;
+                                let matchingData = "";
                                 response.forEach(function(item) {
                                     if (item.service_id == selectedServiceId) {
                                         matchingData += "<b>Service Name:</b> " + item.service_name + " <b>Start Time:</b> " + item.start_time + " <b>End Time:</b> " + item.end_time + " <b>Days:</b> " + item.days + " <b>Report Delivery:</b> " + item.report_delevary + "<br><br>";
@@ -182,7 +182,7 @@ class TatTimeLabController extends AdminController
         Admin::script($this->script());
         $form = new Form(new TatTimeLab());
 
-        $form->select('service_id', __('Choose A Service'))->addElementClass('service_list')->options($this->service_title)->rules('required')->attribute('onchange', 'myFunction(this)');
+        $form->select('service_id', __('Choose A Service'))->addElementClass('service_list')->options($this->service_title)->rules('required');
         $form->hidden('service_name', __('Service name'))->addElementClass('service_name');
         $form->html('<div id="show"></div>');
 
