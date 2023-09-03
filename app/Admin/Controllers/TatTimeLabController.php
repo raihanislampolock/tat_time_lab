@@ -54,25 +54,11 @@ class TatTimeLabController extends AdminController
     protected function script()
     {
         return <<<EOT
-            $(document).ready(function() {
-                $(".service_list").on("change", function() {
-                    serviceNames();
-                    myFunction(this);
-                });
-            });
-    
-            function serviceNames() {
-                if ($(".service_list").find(":selected").val()) {
-                    let serviceName = $(".service_list option:selected").text();
-                    $(".service_name").val(serviceName);
-                }
-            }
-            
-            window.myFunction = function(selectElement) {
-                $(selectElement).on("change", function() {
-                    var selectedServiceId = $(this).val();
-                    var matchingData = ""; // Initialize an empty string to accumulate matching data.
-            
+        $(document).ready(function() {
+            $(".service_list").on("change", function() {
+                serviceNames();
+                var selectedServiceId = $(this).val();
+                if (selectedServiceId) {
                     $.ajax({
                         url: "/admin/get-lab-tat",
                         type: "GET",
@@ -80,13 +66,14 @@ class TatTimeLabController extends AdminController
                         success: function(response) {
                             if (response) {
                                 var found = false;
-                                for (var i = 0; i < response.length; i++) {
-                                    if (response[i].service_id == selectedServiceId) {
-                                        matchingData += "<b>Service Name:</b> " + response[i].service_name + " <b>Start Time:</b> " + response[i].start_time + " <b>End Time:</b> " + response[i].end_time + " <b>Days:</b> " + response[i].days + " <b>Report Delevary:</b> " + response[i].report_delevary + "<br><br>";
+                                var matchingData = "";
+                                response.forEach(function(item) {
+                                    if (item.service_id == selectedServiceId) {
+                                        matchingData += "<b>Service Name:</b> " + item.service_name + " <b>Start Time:</b> " + item.start_time + " <b>End Time:</b> " + item.end_time + " <b>Days:</b> " + item.days + " <b>Report Delivery:</b> " + item.report_delevary + "<br><br>";
                                         found = true;
                                     }
-                                }
-            
+                                });                                
+        
                                 if (found) {
                                     document.getElementById("show").innerHTML = matchingData;
                                 } else {
@@ -100,8 +87,17 @@ class TatTimeLabController extends AdminController
                             console.log("An error occurred:", error);
                         }
                     });
-                });
-            };
+                }
+            });
+        });
+        
+        function serviceNames() {
+            if ($(".service_list").find(":selected").val()) {
+                let serviceName = $(".service_list option:selected").text();
+                $(".service_name").val(serviceName);
+            }
+        }
+        
         EOT;
     }
 
