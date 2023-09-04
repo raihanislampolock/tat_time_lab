@@ -10,46 +10,108 @@ use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Show;
+use Illuminate\Support\Facades\DB;
 
 class TatTimeLabController extends AdminController
 {
     private $service_title;
     private $service_name;
+    private $results;
 
     public function __construct()
     {
-        $curl = curl_init();
-        curl_setopt_array(
-            $curl,
-            array(
-                CURLOPT_URL => "https://ept.praavahealth.com/API/PatientPortal/ServiceMasterApp?token=03e62234b7238ca3eab782f30b9dfa94&code=service",
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'GET',
-            )
-        );
-        try {
-            $response = curl_exec($curl);
-            // dd($response);
-            if (!is_null($response)) {
-                $responseData = json_decode($response, true);
-                if (isset($responseData['result'])) {
-                    $title = [];
-                    foreach ($responseData['result'] as $item) {
-                        $title[$item['id']] = $item['service_name'];
-                    }
-                    $this->service_title = $title;
-                }
+        // $curl = curl_init();
+        // curl_setopt_array(
+        //     $curl,
+        //     array(
+        //         CURLOPT_URL => "https://ept.praavahealth.com/API/PatientPortal/ServiceMasterApp?token=03e62234b7238ca3eab782f30b9dfa94&code=service",
+        //         CURLOPT_RETURNTRANSFER => true,
+        //         CURLOPT_ENCODING => '',
+        //         CURLOPT_MAXREDIRS => 10,
+        //         CURLOPT_TIMEOUT => 0,
+        //         CURLOPT_FOLLOWLOCATION => true,
+        //         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        //         CURLOPT_CUSTOMREQUEST => 'GET',
+        //     )
+        // );
+        // try {
+        //     $response = curl_exec($curl);
+        //     // dd($response);
+        //     if (!is_null($response)) {
+        //         $responseData = json_decode($response, true);
+        //         if (isset($responseData['result'])) {
+        //             $title = [];
+        //             foreach ($responseData['result'] as $item) {
+        //                 $title[$item['id']] = $item['service_name'];
+        //             }
+        //             $this->service_title = $title;
+        //         }
 
-                return $this->service_title;
-            }
-        } catch (\Exception $exception) {
-            \Log::info(json_encode($exception));
-        }
+        //         return $this->service_title;
+        //     }
+        // } catch (\Exception $exception) {
+        //     \Log::info(json_encode($exception));
+        // }
+        $query = "
+            SELECT
+                DISTINCT tt.SERVICE_MASTER_ID,
+                (tt.service_name) SERVICE_NAME,
+                CASE
+                    WHEN LOWER(tt.service_code) LIKE '%b2b%' THEN 'B2B'
+                    ELSE 'B2C'
+                END AS Category
+            FROM
+                (
+                    SELECT
+                        s.service_name service_name,
+                        s.SERVICE_MASTER_ID,
+                        t.totalcharges amount,
+                        t.tariffversion my_version,
+                        s.service_type,
+                        s.service_code,
+                        s.is_active,
+                        s.est_duration,
+                        s.SPECIAL_INSTRUCTION
+                    FROM
+                        PRHLIVE.TARIFF t
+                    LEFT OUTER JOIN PRHLIVE.SERVICEMASTER s ON
+                        t.service_id = s.service_master_id
+                    WHERE
+                        s.service_name IS NOT NULL
+                        AND s.is_active = 'Y'
+                ) tt
+            INNER JOIN (
+                    SELECT
+                        pp.service_name my_service,
+                        MAX(pp.my_version) AS maximum_version
+                    FROM
+                        (
+                            SELECT
+                                s.service_name service_name,
+                                t.totalcharges amount,
+                                t.tariffversion my_version,
+                                s.service_type
+                            FROM
+                                PRHLIVE.TARIFF t
+                            LEFT OUTER JOIN PRHLIVE.SERVICEMASTER s ON
+                                t.service_id = s.service_master_id
+                            WHERE
+                                s.service_name IS NOT NULL
+                                AND s.is_active = 'Y'
+                        ) pp
+                    GROUP BY
+                        pp.service_name
+                ) groupedtt ON
+                tt.service_name = groupedtt.my_service
+                AND tt.my_version = groupedtt.maximum_version
+            WHERE
+                tt.service_type = 115
+            ORDER BY
+                tt.service_name
+        ";
+        $oracleResults = DB::connection('oracle')->select(DB::raw($query));
+        dd($oracleResults);
+
     }
     protected function script()
     {

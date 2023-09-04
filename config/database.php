@@ -90,6 +90,17 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
         ],
+          'oracle' => [
+        'driver' => 'oracle',
+        'tns' => env('DB_TNS', ''),
+        'host' => env('DB_HOST', '127.0.0.1'),
+        'port' => env('DB_PORT', '15022'),
+        'database' => env('DB_DATABASE', 'forge'),
+        'username' => env('DB_USERNAME', 'forge'),
+        'password' => env('DB_PASSWORD', ''),
+        'charset' => 'UTF8',
+        'prefix' => '',
+    ],
 
     ],
 
