@@ -161,16 +161,14 @@ function numberTowords($num)
     $rettxt = "";
     foreach ($whole_arr as $key => $i) {
         if ($i < 20) {
-            $rettxt .= $ones[$i] ?? '';
+            $rettxt .= $ones[$i];
         } elseif ($i < 100) {
             $rettxt .= $tens[substr($i, 0, 1)];
             $rettxt .= " " . $ones[substr($i, 1, 1)];
         } else {
             $rettxt .= $ones[substr($i, 0, 1)] . " " . $hundreds[0];
-            if (array_key_exists(substr($i, 1, 1), $tens))
-                $rettxt .= " " . $tens[substr($i, 1, 1)];
-            if (array_key_exists(substr($i, 2, 1), $ones))
-                $rettxt .= " " . $ones[substr($i, 2, 1)];
+            $rettxt .= " " . $tens[substr($i, 1, 1)];
+            $rettxt .= " " . $ones[substr($i, 2, 1)];
         }
         if ($key > 0) {
             $rettxt .= " " . $hundreds[$key] . " ";
@@ -187,84 +185,6 @@ function numberTowords($num)
     }
     return $rettxt;
 }
-
-function numberToWords2($num)
-{
-    $ones = array(
-        1 => "one",
-        2 => "two",
-        3 => "three",
-        4 => "four",
-        5 => "five",
-        6 => "six",
-        7 => "seven",
-        8 => "eight",
-        9 => "nine"
-    );
-
-    $tens = array(
-        10 => "ten",
-        20 => "twenty",
-        30 => "thirty",
-        40 => "forty",
-        50 => "fifty",
-        60 => "sixty",
-        70 => "seventy",
-        80 => "eighty",
-        90 => "ninety"
-    );
-
-    $hundreds = array(
-        100 => "hundred",
-        1000 => "thousand",
-        1000000 => "million",
-        1000000000 => "billion",
-        1000000000000 => "trillion",
-        1000000000000000 => "quadrillion"
-    );
-
-    // Handle zero separately
-    if ($num == 0) {
-        return "zero";
-    }
-
-    $rettxt = "";
-
-    foreach ($hundreds as $key => $value) {
-        if ($num >= $key) {
-            $count = floor($num / $key);
-            $num -= $count * $key;
-
-            if ($count > 0) {
-                if ($key >= 100) {
-                    $rettxt .= numberToWords2($count) . ' ' . $value;
-                } else {
-                    $rettxt .= $ones[$count] . ' ' . $value;
-                }
-
-                if ($num > 0) {
-                    $rettxt .= ' and ';
-                }
-            }
-        }
-    }
-
-    if ($num < 10) {
-        $rettxt .= $ones[$num] ?? '';
-    } elseif ($num < 20) {
-        $rettxt .= $ones[$num];
-    } else {
-        $tensDigit = floor($num / 10) * 10;
-        $onesDigit = $num % 10;
-        $rettxt .= $tens[$tensDigit];
-        if ($onesDigit > 0) {
-            $rettxt .= '-' . $ones[$onesDigit];
-        }
-    }
-
-    return $rettxt;
-}
-
 
 
 function client_unique_id()
@@ -487,7 +407,7 @@ function makeHttpRequest(string $request_method, array $param, string $url, arra
                 $client = new GuzzleHttp\Client(['headers' => $header, 'verify' => false]);
                 $response = $client->post($url, [$requestBodyType => $param]);
                 if ($decodeResponse)
-                    $response = GuzzleHttp\json_decode((string) $response->getBody(), true);
+                    $response = GuzzleHttp\json_decode((string)$response->getBody(), true);
                 return $response;
             } catch (GuzzleHttp\Exception\RequestException $e) {
                 Log::error("Request Exception Happened when tried to call: " . $url, [
@@ -515,10 +435,10 @@ function makeHttpRequest(string $request_method, array $param, string $url, arra
             break;
         default:
             try {
-                $client = new GuzzleHttp\Client(array('curl' => array(CURLOPT_SSL_VERIFYPEER => false, ), 'headers' => $header, ));
+                $client = new GuzzleHttp\Client(array('curl' => array(CURLOPT_SSL_VERIFYPEER => false,), 'headers' => $header,));
                 $response = $client->get($url . '?' . http_build_query($param));
                 if ($decodeResponse)
-                    $response = GuzzleHttp\json_decode((string) $response->getBody(), true);
+                    $response = GuzzleHttp\json_decode((string)$response->getBody(), true);
                 return $response;
             } catch (GuzzleHttp\Exception\RequestException $e) {
                 Log::error("Request Exception Happened when tried to call: " . $url, [
@@ -1171,7 +1091,7 @@ function display_amount($amount)
 {
     $decimals = config('display_amount_decimals', 2);
     $decimals = intval($decimals);
-    $amount = number_format((float) $amount, $decimals, '.', '');
+    $amount = number_format((float)$amount, $decimals, '.', '');
     return $amount . ' ' . config('desplay_amount_prefix', 'TK');
 }
 
@@ -1238,21 +1158,18 @@ function get_service_list_from_his()
     $response = [];
     try {
         $curl = curl_init();
-        curl_setopt_array(
-            $curl,
-            array(
-                CURLOPT_URL => config('application.ept_service_list_from_his'),
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_SSL_VERIFYHOST => false,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'GET',
-            )
-        );
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => config('application.ept_service_list_from_his'),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+        ));
         $response = curl_exec($curl);
         curl_close($curl);
         $response = json_decode($response);
