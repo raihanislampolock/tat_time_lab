@@ -59,7 +59,6 @@ return [
             'url' => env('APP_URL').'/public/upload/',
         ],
 
-
     ],
 
     /*

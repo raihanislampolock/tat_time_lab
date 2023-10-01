@@ -10,11 +10,15 @@ use Encore\Admin\Controllers\AdminController;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Show;
+use Exception;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Config;
 
 class TatTimeLabController extends AdminController
 {
     private $service_title;
     private $service_name;
+    private $category;
 
     public function __construct()
     {
@@ -22,7 +26,7 @@ class TatTimeLabController extends AdminController
         curl_setopt_array(
             $curl,
             array(
-                CURLOPT_URL => "https://ept.praavahealth.com/API/PatientPortal/ServiceMasterApp?token=03e62234b7238ca3eab782f30b9dfa94&code=service",
+                CURLOPT_URL => 'http://api.praava.health/api/service_list',
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
@@ -30,33 +34,36 @@ class TatTimeLabController extends AdminController
                 CURLOPT_FOLLOWLOCATION => true,
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                 CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_HTTPHEADER => array(
+                    'auth: 811d5252b43ede3da0686aa828ff2e12',
+                ),
             )
         );
+
         try {
             $response = curl_exec($curl);
-            // dd($response);
-            if (!is_null($response)) {
-                $responseData = json_decode($response, true);
-                if (isset($responseData['result'])) {
-                    $title = [];
-                    foreach ($responseData['result'] as $item) {
-                        $title[$item['id']] = $item['service_name'];
-                    }
-                    $this->service_title = $title;
-                }
+            $responseData = json_decode($response);
 
-                return $this->service_title;
+            if (isset($responseData)) {
+                $title = [];
+                foreach ($responseData as $item) {
+                    $title[$item->service_id] = $item->service_name . ' - ' . $item->category;
+                }
+                $this->service_title = $title;
             }
-        } catch (\Exception $exception) {
-            \Log::info(json_encode($exception));
+        } catch (Exception $exception) {
+            Log::info(json_encode($exception));
         }
     }
+
+
     protected function script()
     {
         return <<<EOT
         $(document).ready(function() {
             $(".service_list").on("change", function() {
                 serviceNames();
+                serviceCategory();
                 let selectedServiceId = $(this).val();
                 if (selectedServiceId) {
                     $.ajax({
@@ -69,7 +76,7 @@ class TatTimeLabController extends AdminController
                                 let matchingData = "";
                                 response.forEach(function(item) {
                                     if (item.service_id == selectedServiceId) {
-                                        matchingData += "<b>Service Name:</b> " + item.service_name + " <b>Start Time:</b> " + item.start_time + " <b>End Time:</b> " + item.end_time + " <b>Days:</b> " + item.days + " <b>Report Delivery:</b> " + item.report_delevary + "<br><br>";
+                                        matchingData += "<b>Service Name:</b> " + item.service_name + " <b>Start Time:</b> " + item.start_time + " <b>End Time:</b> " + item.end_time + " <b>Days:</b> " + item.days + " <b>Report Delivery:</b> " + item.report_delivery + "<br><br>";
                                         found = true;
                                     }
                                 });                                
@@ -94,14 +101,27 @@ class TatTimeLabController extends AdminController
         function serviceNames() {
             if ($(".service_list").find(":selected").val()) {
                 let serviceName = $(".service_list option:selected").text();
-                $(".service_name").val(serviceName);
+                let parts = serviceName.split(' - ');
+                if (parts.length === 2) {
+                    $(".service_name").val(parts[0]);
+                    $(".category").val(parts[1]);
+                }
             }
         }
         
+        function serviceCategory() {
+            if ($(".service_list").find(":selected").val()) {
+                let serviceName = $(".service_list option:selected").text();
+                let parts = serviceName.split(' - ');
+                if (parts.length === 2) {
+                    $(".service_name").val(parts[0]);
+                    $(".category").val(parts[1]);
+                }
+            }
+        }
+         
         EOT;
     }
-
-
 
 
     /**
@@ -123,14 +143,15 @@ class TatTimeLabController extends AdminController
         $grid->column('id', __('Id'));
         $grid->column('service_id', __('Service id'));
         $grid->column('service_name', __('Service name'));
-        $grid->TestType()->name('Test Type');
+        $grid->column('test_type', __('Test Type'));
+        // $grid->TestType()->name('Test Type');
         $grid->column('start_time', __('Start time'));
         $grid->column('end_time', __('End time'));
         $grid->column('days', __('Days'));
-        $grid->column('report_delevary', __('Report delevary'));
+        $grid->column('report_delivery', __('Report delivery'));
         $grid->column('status', __('Status'))->display(function ($status) {
             return $status ? '<span style=" color: green; font-weight:900;">Active</span>' :
-            '<span style="color: red; font-weight:900;">Inactive</span>';
+                '<span style="color: red; font-weight:900;">Inactive</span>';
         });
         $grid->column('cd', __('Cd'));
 
@@ -158,7 +179,7 @@ class TatTimeLabController extends AdminController
         $show->field('start_time', __('Start time'));
         $show->field('end_time', __('End time'));
         $show->field('days', __('Days'));
-        $show->field('report_delevary', __('Report delevary'));
+        $show->field('report_delivery', __('Report delivery'));
         $show->field('status', __('Status'));
         $show->field('cb', __('Cb'));
         $show->field('cd', __('Cd'));
@@ -168,9 +189,10 @@ class TatTimeLabController extends AdminController
         return $show;
     }
 
-    public function showTat(){
+    public function showTat()
+    {
         $data = TatTimeLab::all();
-            return response()->json($data); 
+        return response()->json($data);
     }
     /**
      * Make a form builder.
@@ -184,13 +206,14 @@ class TatTimeLabController extends AdminController
 
         $form->select('service_id', __('Choose A Service'))->addElementClass('service_list')->options($this->service_title)->rules('required');
         $form->hidden('service_name', __('Service name'))->addElementClass('service_name');
+        $form->hidden('test_type', __('Test Type'))->addElementClass('category');
         $form->html('<div id="show"></div>');
 
-        $Test = TestType::pluck('name', 'id')->toArray();
-        $form->select('b2b_b2c', __('Test Type'))->options($Test);
+        // $Test = TestType::pluck('name', 'id')->toArray();
+        // $form->select('b2b_b2c', __('Test Type'))->options($Test);
         $form->time('start_time', __('Start time'))->format('hh:mm A');
         $form->time('end_time', __('End time'))->format('hh:mm A');
-        $form->time('report_delevary', __('Report delevary'))->format('hh:mm A');
+        $form->time('report_delivery', __('Report delivery'))->format('hh:mm A');
         $form->number('days', __('Days'));
         $form->switch('status', __('Status'))->default(1);
         $form->hidden('cb', __('Cb'))->value(auth()->user()->name);
@@ -198,6 +221,4 @@ class TatTimeLabController extends AdminController
 
         return $form;
     }
-    
-
 }
