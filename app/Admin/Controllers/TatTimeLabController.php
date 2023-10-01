@@ -22,11 +22,14 @@ class TatTimeLabController extends AdminController
 
     public function __construct()
     {
+        $url = Config::get('filesystems.disks.tat_time.url');
+        $apiKey = Config::get('filesystems.disks.tat_time.api_key');
+
         $curl = curl_init();
         curl_setopt_array(
             $curl,
             array(
-                CURLOPT_URL => 'http://api.praava.health/api/service_list',
+                CURLOPT_URL => $url,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
@@ -35,7 +38,7 @@ class TatTimeLabController extends AdminController
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                 CURLOPT_CUSTOMREQUEST => 'GET',
                 CURLOPT_HTTPHEADER => array(
-                    'auth: 811d5252b43ede3da0686aa828ff2e12',
+                    'auth: ' . $apiKey ,
                 ),
             )
         );

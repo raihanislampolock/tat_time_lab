@@ -58,6 +58,10 @@ return [
             'visibility' => 'public',
             'url' => env('APP_URL').'/public/upload/',
         ],
+        'tat_time' => [
+            'url' => 'http://api.praava.health/api/service_list',
+            'api_key' => '811d5252b43ede3da0686aa828ff2e12',
+        ],
 
     ],
 
