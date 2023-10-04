@@ -12,7 +12,7 @@ Route::group([
 ], function (Router $router) {
 
     $router->get('/', 'HomeController@index')->name('home');
-    Route::resource('tat-time-lab', TatTimeLabController::class);
+    Route::resource('lab-tat', TatTimeLabController::class);
     $router->get('get-lab-tat', 'TatTimeLabController@showTat');
     
 });

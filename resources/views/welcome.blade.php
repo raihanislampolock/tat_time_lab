@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+<h1>Welcome To Praava Health Lab TAT</h1>
+
+
+{{-- <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
@@ -129,4 +132,4 @@
             </div>
         </div>
     </body>
-</html>
+</html> --}}
