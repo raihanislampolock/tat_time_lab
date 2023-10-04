@@ -147,7 +147,6 @@ class TatTimeLabController extends AdminController
         $grid->column('service_id', __('Service id'));
         $grid->column('service_name', __('Service name'));
         $grid->column('test_type', __('Test Type'));
-        // $grid->TestType()->name('Test Type');
         $grid->column('start_time', __('Start time'));
         $grid->column('end_time', __('End time'));
         $grid->column('days', __('Days'));
@@ -212,8 +211,6 @@ class TatTimeLabController extends AdminController
         $form->hidden('test_type', __('Test Type'))->addElementClass('category');
         $form->html('<div id="show"></div>');
 
-        // $Test = TestType::pluck('name', 'id')->toArray();
-        // $form->select('b2b_b2c', __('Test Type'))->options($Test);
         $form->time('start_time', __('Start time'))->format('hh:mm A');
         $form->time('end_time', __('End time'))->format('hh:mm A');
         $form->time('report_delivery', __('Report delivery'))->format('hh:mm A');

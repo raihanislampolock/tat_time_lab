@@ -19,10 +19,10 @@ class CreateTatTimeLabTable extends Migration
             $table->integer('service_id');
             $table->string('service_name', 255);
             $table->string('test_type', 255);
-            $table->time('start_time')->nullable();
-            $table->time('end_time')->nullable();
+            $table->string('start_time', 20)->nullable();
+            $table->string('end_time', 20)->nullable();
             $table->integer('days')->nullable();
-            $table->time('report_delivery')->nullable();
+            $table->string('report_delivery', 20)->nullable();
             $table->boolean('status')->default(1);
             $table->string('cb', 255)->nullable();
             $table->timestamp('cd')->default(DB::raw('CURRENT_TIMESTAMP'));
