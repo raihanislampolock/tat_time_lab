@@ -214,7 +214,7 @@ class TatTimeLabController extends AdminController
         $form->time('start_time', __('Start time'))->format('hh:mm A');
         $form->time('end_time', __('End time'))->format('hh:mm A');
         $form->time('report_delivery', __('Report delivery'))->format('hh:mm A');
-        $form->number('days', __('Days'));
+        $form->number('days', __('Days'))->default (0);
         $form->switch('status', __('Status'))->default(1);
         $form->hidden('cb', __('Cb'))->value(auth()->user()->name);
         $form->hidden('ub', __('Ub'))->value(auth()->user()->name);
