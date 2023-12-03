@@ -18,16 +18,16 @@ class TatTimeLab extends Model
         'report_delivery',
     ];
 
-    public function setStartTimeAttribute($value)
-    {
-        $this->attributes['start_time'] = Carbon::parse($value)->format('H:i');
-    }
-    public function setEndTimeAttribute($value)
-    {
-        $this->attributes['end_time'] = Carbon::parse($value)->format('H:i');
-    }
-    public function setReportDeliveryAttribute($value)
-    {
-        $this->attributes['report_delivery'] = Carbon::parse($value)->format('H:i');
-    }
+    // public function setStartTimeAttribute($value)
+    // {
+    //     $this->attributes['start_time'] = Carbon::parse($value)->format('H:i');
+    // }
+    // public function setEndTimeAttribute($value)
+    // {
+    //     $this->attributes['end_time'] = Carbon::parse($value)->format('H:i');
+    // }
+    // public function setReportDeliveryAttribute($value)
+    // {
+    //     $this->attributes['report_delivery'] = Carbon::parse($value)->format('H:i');
+    // }
 }

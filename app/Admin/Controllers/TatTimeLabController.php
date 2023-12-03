@@ -210,14 +210,31 @@ class TatTimeLabController extends AdminController
         $form->hidden('service_name', __('Service name'))->addElementClass('service_name');
         $form->hidden('test_type', __('Test Type'))->addElementClass('category');
         $form->html('<div id="show"></div>');
-
-        $form->time('start_time', __('Start time'))->format('hh:mm A');
-        $form->time('end_time', __('End time'))->format('hh:mm A');
+        $form->time('start_time', __('Start time'))->format('hh:mm A')->default (null);
+        $form->time('end_time', __('End time'))->format('hh:mm A')->default (null);
         $form->time('report_delivery', __('Report delivery'))->format('hh:mm A');
         $form->number('days', __('Days'))->default (0);
         $form->switch('status', __('Status'))->default(1);
         $form->hidden('cb', __('Cb'))->value(auth()->user()->name);
         $form->hidden('ub', __('Ub'))->value(auth()->user()->name);
+
+        $form->saving(function (Form $form) {
+            // Get the current value of the 'remark' field
+            $start = $form->input('start_time');
+            $end = $form->input('end_time');
+            $delivery = $form->input('report_delivery');
+        
+            // Perform your manipulation on the data
+            $modifiedStart = str_replace([' AM', ' PM'], '', $start); // Use an array for replacements
+            $modifiedEnd = str_replace([' AM', ' PM'], '', $end); // Use an array for replacements
+            $modifiedDelivery = str_replace([' AM', ' PM'], '', $delivery); // Use an array for replacements
+        
+            // Set the modified value back to the 'remark' field
+            $form->input('start_time', $modifiedStart);
+            $form->input('end_time', $modifiedEnd);
+            $form->input('report_delivery', $modifiedDelivery);
+        });
+    
 
         return $form;
     }
